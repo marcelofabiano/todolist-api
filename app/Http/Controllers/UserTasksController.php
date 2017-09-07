@@ -18,12 +18,27 @@ class UserTasksController extends Controller
 
     public function index($idUser)
     {
-        $tasks = $this->task->where('user_id', $idUser)
-            ->orderBy('id', 'ASC')
-            ->limit(100)
-            ->get();
+        $limit = request()->has('limit') ? request()->get('limit') : 100;
+        $offset = request()->has('offset') ? request()->get('offset') : 0;
 
-        $tasks = new TaskCollection($tasks);
+        if (request()->has('sort') and request()->has('order')) {
+            $sort = request()->get('sort') == 'desc' ? 'desc' : 'asc';
+            $order = request()->get('order');
+        } else {
+            $sort = 'asc';
+            $order = 'id';
+        }
+
+        $tasks = $this->task->where('user_id', $idUser)
+            ->orderBy($order, $sort)
+            ->limit($limit)
+            ->offset($offset);
+
+        if (request()->has('done')) {
+            $tasks = $tasks->where('done', request()->get('done'));
+        }
+
+        $tasks = new TaskCollection($tasks->get());
         return response($tasks, 200);
     }
 

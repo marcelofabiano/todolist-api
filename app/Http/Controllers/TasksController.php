@@ -31,10 +31,13 @@ class TasksController extends Controller
         $tasks = $this->task
             ->orderBy($order, $sort)
             ->limit($limit)
-            ->offset($offset)
-            ->get();
+            ->offset($offset);
 
-        return response(new TaskCollection($tasks), 200);
+        if (request()->has('done')) {
+            $tasks = $tasks->where('done', request()->get('done'));
+        }
+
+        return response(new TaskCollection($tasks->get()), 200);
     }
 
     public function show($id)
