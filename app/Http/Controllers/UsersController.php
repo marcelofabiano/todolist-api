@@ -18,8 +18,25 @@ class UsersController extends Controller
 
     public function index()
     {
-        $users = $this->user->orderBy('id', 'ASC')->limit(100)->get();
-        return new UserCollection($users);
+        $limit = request()->has('limit') ? request()->get('limit') : 100;
+        $offset = request()->has('offset') ? request()->get('offset') : 0;
+
+        if (request()->has('sort') and request()->has('order')) {
+            $sort = request()->get('sort') == 'desc' ? 'desc' : 'asc';
+            $order = request()->get('order');
+        } else {
+            $sort = 'asc';
+            $order = 'id';
+        }
+
+        $users = $this->user
+            ->orderBy('id', 'ASC')
+            ->limit($limit)
+            ->offset($offset)
+            ->orderBy($order, $sort)
+            ->get();
+        
+        return response(new UserCollection($users), 200);
     }
 
     public function show($id)

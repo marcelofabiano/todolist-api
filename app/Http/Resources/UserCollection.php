@@ -6,6 +6,10 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class UserCollection extends ResourceCollection
 {
+    private $limit = 100;
+    private $offset = 0;
+    private $order = 'id';
+    private $sort = 'asc';
     /**
      * Transform the resource collection into an array.
      *
@@ -14,6 +18,7 @@ class UserCollection extends ResourceCollection
      */
     public function toArray($request)
     {
+        $this->setParams();
         return [
             'data' => $this->when($this->collection->count(), function () {
                 return $this->collection->map(function ($user) {
@@ -22,8 +27,25 @@ class UserCollection extends ResourceCollection
             }),
             'meta' => [
                 'total' => $this->collection->count(),
-                'limit' => 100
+                'limit' => $this->limit,
+                'offset' => $this->offset,
+                'order' => $this->order,
+                'sort' => $this->sort,
             ]
         ];
+    }
+
+    private function setParams()
+    {
+        $this->limit = request()->has('limit') ? request()->get('limit') : 100;
+        $this->offset = request()->has('offset') ? request()->get('offset') : 0;
+
+        if (request()->has('sort') and request()->has('order')) {
+            $this->sort = request()->get('sort') == 'desc' ? 'desc' : 'asc';
+            $this->order = request()->get('order');
+        } else {
+            $this->sort = 'asc';
+            $this->order = 'id';
+        }
     }
 }

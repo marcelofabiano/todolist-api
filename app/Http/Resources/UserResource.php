@@ -21,7 +21,8 @@ class UserResource extends Resource
                 'name' => $this->name
             ],
             'links' => [
-                'self' => route('users.show', $this->id)
+                'self' => route('users.show', $this->id),
+                'tasks' => route('users.tasks.index', $this->id)
             ],
             'relationships' => [
                 'tasks' => new TaskCollection($this->tasks)

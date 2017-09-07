@@ -23,7 +23,8 @@ class TaskResource extends Resource
                 'user_id' => $this->user_id
             ],
             'links' => [
-                'self' => route('users.tasks.show', [$this->user_id, $this->id])
+                'self' => route('users.tasks.show', [$this->user_id, $this->id]),
+                'user' => route('users.show', $this->user_id)
             ]
         ];
     }
