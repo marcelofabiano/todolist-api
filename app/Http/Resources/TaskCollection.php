@@ -6,47 +6,29 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class TaskCollection extends ResourceCollection
 {
-    private $limit = 100;
-    private $offset = 0;
-    private $order = 'id';
-    private $sort = 'asc';
-
-    /**
-     * Transform the resource collection into an array.
-     *
-     * @param  \Illuminate\Http\Request
-     * @return array
-     */
     public function toArray($request)
     {
-        $this->setParams();
-        return [
-            'data' => $this->when($this->collection->count(), function () {
-                return $this->collection->map(function ($task) {
-                    return new TaskResource($task);
-                });
-            }),
-            'meta' => [
-                'total' => $this->collection->count(),
-                'limit' => $this->limit,
-                'offset' => $this->offset,
-                'order' => $this->order,
-                'sort' => $this->sort,
-            ]
-        ];
+        if ($this->collection->count()) {
+            $data['data'] = $this->collection->map(function ($task) {
+                return new TaskResource($task);
+            });
+            $data['meta'] = $this->setMeta();
+            return $data;
+        }
+        return ['data'=>[]];
     }
 
-    private function setParams()
+    private function setMeta()
     {
-        $this->limit = request()->has('limit') ? request()->get('limit') : 100;
-        $this->offset = request()->has('offset') ? request()->get('offset') : 0;
-
+        $data['meta']['limit'] = request()->has('limit') ? request()->get('limit') : 100;
+        $data['meta']['offset'] = request()->has('offset') ? request()->get('offset') : 0;
         if (request()->has('sort') and request()->has('order')) {
-            $this->sort = request()->get('sort') == 'desc' ? 'desc' : 'asc';
-            $this->order = request()->get('order');
+            $data['meta']['sort'] = request()->get('sort') == 'desc' ? 'desc' : 'asc';
+            $data['meta']['order'] = request()->get('order');
         } else {
-            $this->sort = 'asc';
-            $this->order = 'id';
+            $data['meta']['sort'] = 'asc';
+            $data['meta']['order'] = 'id';
         }
+        return $data['meta'];
     }
 }
